@@ -99,6 +99,8 @@ export default {
     // GET /                  预览今天 08:00 两个频道会发的消息 + 之后 60 天的提醒（只读，不发送）
     // GET /?date=YYYY-MM-DD  把指定日期当作"今天"预览
     if (request.method === "GET" && url.pathname === "/") {
+      // 公开预览，不展示 Zoom 号和密码
+      env = { ...env, ZOOM_ID: env.ZOOM_ID && "***", ZOOM_PASSWORD: env.ZOOM_PASSWORD && "***" };
       const today = parseIsoDate(url.searchParams.get("date")) ?? beijingToday();
       const out = { today: isoDate(today), zangli: getZangli(today)?.value ?? null };
       for (const ch of Object.keys(CHANNELS)) {
