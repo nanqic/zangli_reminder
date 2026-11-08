@@ -2,3 +2,4 @@ WEBHOOK_URL=https://your-mattermost/hooks/xxxx
 TEST_TOKEN=change-me
 ZOOM_ID=
 ZOOM_PASSWORD=
+AUSPICIOUS_WEBHOOK_URL=
