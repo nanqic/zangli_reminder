@@ -1,0 +1,21 @@
+name = "zangli-reminder"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[triggers]
+# UTC 00:00 = 北京时间 08:00，检查"明天"是否为藏历初十 / 廿五
+crons = ["0 0 * * *"]
+
+[observability]
+enabled = true
+
+[vars]
+BOT_USERNAME = "荟供提醒"
+# 重日（同一藏历日出现两天）在哪天提醒：first | second
+LEAP_DAY_MODE = "first"
+# 缺日（该藏历日不存在）在哪天提醒：prev（前一天）| next（后一天）| none
+MISSING_DAY_MODE = "prev"
+# 可选：MESSAGE_TEMPLATE，占位符 {DATE} {WEEKDAY} {TDAY} {NAME} {ZANGLI} {NOTE}
+# 机密配置不要写在这里，用 wrangler secret put：
+#   WEBHOOK_URL  Mattermost incoming webhook 地址
+#   TEST_TOKEN   POST /test 的鉴权 token
