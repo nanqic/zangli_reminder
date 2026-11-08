@@ -36,6 +36,28 @@ function checkTomorrow(env, now = new Date()) {
   };
 }
 
+function period(h) {
+  return h < 5 ? "凌晨" : h < 12 ? "早上" : h < 13 ? "中午" : h < 18 ? "下午" : "晚上";
+}
+
+/** 消息附加的活动信息；温哥华时间按当天时区规则（含夏令时）自动换算 */
+function eventInfo(env, n) {
+  const [hh, mm] = (env.EVENT_TIME_BJ || "20:15").split(":").map(Number);
+  const utc = new Date(n * 86400000 + (hh - 8) * 3600000 + mm * 60000);
+  const parts = Object.fromEntries(new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Vancouver", hour: "numeric", minute: "2-digit", hourCycle: "h23",
+  }).formatToParts(utc).map((p) => [p.type, p.value]));
+  const vh = Number(parts.hour);
+  const lines = [
+    `北京时间：${period(hh)}${hh}:${String(mm).padStart(2, "0")}`,
+    `温哥华时间：${period(vh)}${vh}:${parts.minute}`,
+  ];
+  if (env.ZOOM_ID) lines.push(`zoom房间：${env.ZOOM_ID}`);
+  if (env.ZOOM_PASSWORD) lines.push(`Password: ${env.ZOOM_PASSWORD}`);
+  if (env.OFFERING_NOTE) lines.push("", env.OFFERING_NOTE);
+  return lines.join("\n");
+}
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data, null, 2), {
     status,
@@ -47,7 +69,10 @@ export default {
   async scheduled(event, env, ctx) {
     const result = checkTomorrow(env, new Date(event.scheduledTime));
     console.log(JSON.stringify(result));
-    if (result.message) await postMattermost(env, result.message);
+    if (result.message) {
+      const tomorrow = beijingToday(new Date(event.scheduledTime)) + 1;
+      await postMattermost(env, result.message + "\n\n" + eventInfo(env, tomorrow));
+    }
   },
 
   async fetch(request, env) {
@@ -80,7 +105,8 @@ export default {
       const r = checkTomorrow(env);
       const text = `【测试通知】今天是${month}月${day}日（周${weekday}），` +
         `藏历${tz.year}年${tz.month}月（${tz.tMonth}月）${tz.day}。` +
-        (r.message ? `明天的提醒：${r.message}` : "明天不是荟供日。");
+        (r.message ? `明天的提醒：${r.message}` : "明天不是荟供日。") +
+        "\n\n" + eventInfo(env, today);
       await postMattermost(env, text);
       return json({ sent: text });
     }

@@ -19,3 +19,7 @@ MISSING_DAY_MODE = "prev"
 # 机密配置不要写在这里，用 wrangler secret put：
 #   WEBHOOK_URL  Mattermost incoming webhook 地址
 #   TEST_TOKEN   POST /test 的鉴权 token
+
+# 荟供活动信息（附在提醒末尾）。ZOOM_ID / ZOOM_PASSWORD 用 secret 配置
+EVENT_TIME_BJ = "20:15"
+OFFERING_NOTE = "需要准备好荟供品，各种水果、零食均可"
