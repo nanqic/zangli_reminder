@@ -1,9 +1,8 @@
 # zangli-reminder
 
-Cloudflare Worker：每天北京时间 08:00 推送藏历提醒到两个 Mattermost 频道：
+Cloudflare Worker：每天北京时间 08:00 推送藏历提醒到 Mattermost 荟供频道：
 
 - **荟供频道**（`WEBHOOK_URL`）：提前一天提醒藏历初十（莲师荟供日）、廿五（空行母荟供日），附荟供时间（温哥华时间自动换算）、Zoom、供品说明
-- **殊胜日频道**（`AUSPICIOUS_WEBHOOK_URL`）：当天提醒全部殊胜日（每月初一、初八、初十、十五、十八、廿一、廿五、三十，及年度佛陀节日），列表见 `src/reminder.js`
 
 藏历数据与换算算法来自 [stonelf/zangli](https://github.com/stonelf/zangli)（MIT，见 `THIRD_PARTY_LICENSE_zangli.md`），覆盖 1951-01-08 ~ 2051-02-11，离线计算、零运行时依赖。
 
@@ -20,9 +19,9 @@ cp .dev.vars.example .dev.vars   # 填入 WEBHOOK_URL、TEST_TOKEN
 npm run dev               # http://localhost:8787
 ```
 
-- `GET /`：预览今天 08:00 两个频道会发的消息 + 之后 60 天的提醒（只读）
+- `GET /`：预览今天 08:00 会发的消息 + 之后 60 天的提醒（只读）
 - `GET /?date=2027-06-13`：把指定日期当作“今天”预览
-- `POST /test?channel=huigong|auspicious` + `Authorization: Bearer <TEST_TOKEN>`：发送测试消息
+- `POST /test?channel=huigong` + `Authorization: Bearer <TEST_TOKEN>`：发送测试消息
 - `GET /__scheduled?cron=0+0+*+*+*`（仅本地 dev）：模拟定时触发
 
 ## 部署
@@ -30,7 +29,6 @@ npm run dev               # http://localhost:8787
 ```bash
 npx wrangler login
 npx wrangler secret put WEBHOOK_URL
-npx wrangler secret put AUSPICIOUS_WEBHOOK_URL
 npx wrangler secret put ZOOM_ID
 npx wrangler secret put ZOOM_PASSWORD
 npx wrangler secret put TEST_TOKEN

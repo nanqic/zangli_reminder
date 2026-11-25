@@ -1,7 +1,6 @@
-// Cloudflare Worker：每天北京时间 08:00 推送到两个 Mattermost 频道：
-//   - 荟供频道（WEBHOOK_URL）：提前一天提醒藏历初十、廿五，附荟供时间、Zoom、供品说明
-//   - 殊胜日频道（AUSPICIOUS_WEBHOOK_URL）：当天提醒全部殊胜日
-import { beijingToday, huigongMessage, auspiciousMessage, dateLabel, isoDate, parseIsoDate, upcoming } from "./reminder.js";
+// Cloudflare Worker：每天北京时间 08:00 推送到 Mattermost 荟供频道（WEBHOOK_URL）：
+// 提前一天提醒藏历初十、廿五，附荟供时间、Zoom、供品说明
+import { beijingToday, huigongMessage, dateLabel, isoDate, parseIsoDate, upcoming } from "./reminder.js";
 import { getZangli } from "./zangli.js";
 
 const CHANNELS = {
@@ -13,12 +12,6 @@ const CHANNELS = {
       const msg = huigongMessage(n);
       return msg && `${msg}\n\n${eventInfo(env, n)}`;
     },
-  },
-  auspicious: {
-    webhook: "AUSPICIOUS_WEBHOOK_URL",
-    daysAhead: 0, // 当天
-    username: (env) => env.AUSPICIOUS_BOT_USERNAME || env.BOT_USERNAME,
-    message: (env, n) => auspiciousMessage(n),
   },
 };
 
@@ -96,7 +89,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // GET /                  预览今天 08:00 两个频道会发的消息 + 之后 60 天的提醒（只读，不发送）
+    // GET /                  预览今天 08:00 会发的消息 + 之后 60 天的提醒（只读，不发送）
     // GET /?date=YYYY-MM-DD  把指定日期当作"今天"预览
     if (request.method === "GET" && url.pathname === "/") {
       // 公开预览，不展示 Zoom 号和密码
@@ -114,7 +107,7 @@ export default {
       return json(out);
     }
 
-    // POST /test?channel=huigong|auspicious   发送测试消息，需要 Authorization: Bearer <TEST_TOKEN>
+    // POST /test?channel=huigong   发送测试消息，需要 Authorization: Bearer <TEST_TOKEN>
     if (request.method === "POST" && url.pathname === "/test") {
       if (!env.TEST_TOKEN || request.headers.get("Authorization") !== `Bearer ${env.TEST_TOKEN}`) {
         return json({ error: "unauthorized" }, 401);
